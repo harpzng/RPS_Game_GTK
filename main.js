@@ -1,5 +1,9 @@
 const Gtk = imports.gi.Gtk;
 const GObject = imports.gi.GObject;
+const Gio = imports.gi.Gio;
+
+// Global variables (so i can actually access these coz gjs is a piece of sh#### and won't work any other way)
+let cpuChoiceLabel, rockRadioButton, paperRadioButton, scissorsRadioButton;
 
 var RpsGameWindow = GObject.registerClass({
     GTypeName: 'RpsGameWindow',
@@ -49,7 +53,7 @@ var RpsGameWindow = GObject.registerClass({
         mainBox.pack_start(cpuSelectionBox, true, true, 1);
 
         // CPU Choice Label
-        const cpuChoiceLabel = new Gtk.Label({
+        cpuChoiceLabel = new Gtk.Label({
             visible: true,
             can_focus: false,
             label: 'Pick your move and hit \'Play\'',
@@ -65,7 +69,7 @@ var RpsGameWindow = GObject.registerClass({
         mainBox.pack_start(playerSelectionBox, true, true, 2);
 
         // Radio Buttons for Rock, Paper, and Scissors
-        const rockRadioButton = new Gtk.RadioButton({
+        rockRadioButton = new Gtk.RadioButton({
             label: 'Rock',
             name: 'RockRadio',
             visible: true,
@@ -76,7 +80,7 @@ var RpsGameWindow = GObject.registerClass({
         });
         playerSelectionBox.add(rockRadioButton);
 
-        const paperRadioButton = new Gtk.RadioButton({
+        paperRadioButton = new Gtk.RadioButton({
             label: 'Paper',
             name: 'PaperRadio',
             visible: true,
@@ -88,7 +92,7 @@ var RpsGameWindow = GObject.registerClass({
         });
         playerSelectionBox.add(paperRadioButton);
 
-        const scissorsRadioButton = new Gtk.RadioButton({
+        scissorsRadioButton = new Gtk.RadioButton({
             label: 'Scissors',
             name: 'ScissorsRadio',
             visible: true,
@@ -129,6 +133,9 @@ var RpsGameWindow = GObject.registerClass({
             receives_default: true,
         });
         buttonBox.add(resetButton);
+        resetButton.connect('clicked', ()=>{
+            this.reset();
+        })
 
         // Play Button
         const playButton = new Gtk.Button({
@@ -138,6 +145,71 @@ var RpsGameWindow = GObject.registerClass({
             receives_default: true,
         });
         buttonBox.add(playButton);
+        playButton.connect('clicked', () => {
+            this.play();
+        });
+    }
+
+    play() {
+        const cpuMove = this.getCPUMove();
+        const playerMove = this.getPlayerMove();
+
+        let result = '';
+
+        switch (cpuMove) {
+            case 'Rock':
+                result = 'CPU selected Rock';
+                break;
+            case 'Paper':
+                result = 'CPU selected Paper';
+                break;
+            case 'Scissors':
+                result = 'CPU selected Scissors';
+                break;
+        }
+
+        cpuChoiceLabel.set_text(result);
+
+        if (
+            (cpuMove === 'Rock' && playerMove === 'Scissors') ||
+            (cpuMove === 'Scissors' && playerMove === 'Paper') ||
+            (cpuMove === 'Paper' && playerMove === 'Rock')
+        ) {
+            result += ' : CPU WINS!';
+        } else if (
+            (playerMove === 'Rock' && cpuMove === 'Scissors') ||
+            (playerMove === 'Scissors' && cpuMove === 'Paper') ||
+            (playerMove === 'Paper' && cpuMove === 'Rock')
+        ) {
+            result += ' : PLAYER WINS!';
+        } else {
+            result += ' : DRAW!';
+        }
+
+        cpuChoiceLabel.set_text(result);
+    }
+
+    getCPUMove() {
+        const moves = ['Rock', 'Paper', 'Scissors'];
+        const i = Math.floor(Math.random() * moves.length); //should spit out a random no between 0 and 2 (coz 3 options duh)
+        return moves[i]; //return random move
+    }
+
+    getPlayerMove() {
+        if (rockRadioButton.get_active()) {
+            return 'Rock';
+        } else if (paperRadioButton.get_active()) {
+            return 'Paper';
+        } else if (scissorsRadioButton.get_active()) {
+            return 'Scissors';
+        }
+
+        return null;
+    }
+
+    reset(){
+        cpuChoiceLabel.set_text('Pick your move and hit \'Play\'');
+        rockRadioButton.checked= true;
     }
 });
 
