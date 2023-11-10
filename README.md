@@ -1,6 +1,6 @@
 # RPS_Game_GTK
 
-RPS Game in GTK
+##RPS Game in GTK
 
 To get it working, you NEED to have gjs installed
 
